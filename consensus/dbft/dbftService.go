@@ -18,6 +18,7 @@ import (
 	"DNA/events"
 	"DNA/net"
 	msg "DNA/net/message"
+	"DNA/net/node"
 	"errors"
 	"fmt"
 	"time"
@@ -353,7 +354,8 @@ func (ds *DbftService) GetUnverifiedTxs(txs []*tx.Transaction) []*tx.Transaction
 
 func (ds *DbftService) VerifyTxs(txs []*tx.Transaction) error {
 	for _, t := range txs {
-		if ok := ds.localNet.AppendTxnPool(t); !ok {
+		// if ok := ds.localNet.AppendTxnPool(t); !ok {
+		if <-ds.localNet.AppendTxnPoolAsync(t, node.PRIORITY_HIGH) == false {
 			return errors.New("[dbftService] VerifyTxs failed when AppendTxnPool.")
 		}
 	}

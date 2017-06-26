@@ -82,6 +82,7 @@ type Noder interface {
 	GetConnectionCnt() uint
 	GetTxnPool(bool) map[common.Uint256]*transaction.Transaction
 	AppendTxnPool(*transaction.Transaction) bool
+	AppendTxnPoolAsync(tx *transaction.Transaction, priority int) <-chan bool
 	ExistedID(id common.Uint256) bool
 	ReqNeighborList()
 	DumpInfo()

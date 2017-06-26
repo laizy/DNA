@@ -11,12 +11,23 @@ import (
 	"sync"
 )
 
+type appendTxTask struct {
+	tx *transaction.Transaction
+	ok chan bool
+}
+
+const PRIORITY_HIGH = 0
+const PRIORITY_MEDIUM = 1
+const PRIORITY_LOW = 2
+
 type TXNPool struct {
 	sync.RWMutex
 	txnCnt        uint64                                      // count
 	txnList       map[common.Uint256]*transaction.Transaction // transaction which have been verifyed will put into this map
 	issueSummary  map[common.Uint256]common.Fixed64           // transaction which pass the verify will summary the amout to this map
 	inputUTXOList map[string]*transaction.Transaction         // transaction which pass the verify will add the UTXO to this map
+
+	pendings [3]chan appendTxTask
 }
 
 func (this *TXNPool) init() {
@@ -26,6 +37,8 @@ func (this *TXNPool) init() {
 	this.inputUTXOList = make(map[string]*transaction.Transaction)
 	this.issueSummary = make(map[common.Uint256]common.Fixed64)
 	this.txnList = make(map[common.Uint256]*transaction.Transaction)
+
+	this.startupBackendWorker()
 }
 
 //append transaction to txnpool when check ok.
@@ -47,6 +60,83 @@ func (this *TXNPool) AppendTxnPool(txn *transaction.Transaction) bool {
 	//add the transaction to process scope
 	this.addtxnList(txn)
 	return true
+}
+
+func (this *TXNPool) startupBackendWorker() {
+	this.pendings[0] = make(chan appendTxTask, 200)
+	this.pendings[1] = make(chan appendTxTask, 200)
+	this.pendings[2] = make(chan appendTxTask, 200)
+	go func() {
+		for {
+			var stats [3]int
+			// block wait for any task
+			var task appendTxTask
+			select {
+			case task = <-this.pendings[0]:
+				stats[0]++
+			case task = <-this.pendings[1]:
+				stats[1]++
+			case task = <-this.pendings[2]:
+				stats[2]++
+			}
+
+			res := this.verifyTransactionWithTxnPool(task.tx)
+			if res {
+				this.addtxnList(task.tx)
+			}
+			task.ok <- res
+
+			// handle the rest tasks with priority
+			prio := PRIORITY_HIGH
+			for prio <= PRIORITY_LOW {
+				select {
+				case task := <-this.pendings[prio]:
+					stats[prio]++
+					//verify transaction by pool with lock
+					res := this.verifyTransactionWithTxnPool(task.tx)
+					if res {
+						this.addtxnList(task.tx)
+					}
+					task.ok <- res
+				default:
+					prio += 1
+				}
+			}
+
+			if stats[0] > 0 || stats[1] > 0 {
+				log.Error("appendTx stats: high=", stats[0], ", mid=", stats[1], ", low=", stats[2])
+			}
+
+		}
+
+	}()
+
+}
+
+func (this *TXNPool) AppendTxnPoolAsync(txn *transaction.Transaction, priority int) <-chan bool {
+	if priority >= 3 || priority < 0 {
+		priority = 2
+	}
+
+	c := make(chan bool, 1)
+	//verify transaction with Concurrency
+	if err := va.VerifyTransaction(txn); err != nil {
+		log.Info("Transaction verification failed", txn.Hash(), err)
+		c <- false
+		return c
+	}
+
+	if err := va.VerifyTransactionWithLedger(txn, ledger.DefaultLedger); err != nil {
+		log.Info("Transaction verification with ledger failed", txn.Hash(), err)
+		c <- false
+		return c
+	}
+
+	//add the transaction to process scope
+	task := appendTxTask{tx: txn, ok: c}
+	this.pendings[priority] <- task
+
+	return c
 }
 
 //get the transaction in txnpool
@@ -86,12 +176,12 @@ func (this *TXNPool) verifyTransactionWithTxnPool(txn *transaction.Transaction) 
 	//check weather have duplicate UTXO input,if occurs duplicate, just keep the latest txn.
 	ok, duplicateTxn := this.apendToUTXOPool(txn)
 	if !ok && duplicateTxn != nil {
-		log.Info(fmt.Sprintf("txn=%x duplicateTxn UTXO occurs with txn in pool=%x,keep the latest one.",txn.Hash(),duplicateTxn.Hash()))
+		log.Info(fmt.Sprintf("txn=%x duplicateTxn UTXO occurs with txn in pool=%x,keep the latest one.", txn.Hash(), duplicateTxn.Hash()))
 		this.removeTransaction(duplicateTxn)
 	}
 	//check issue transaction weather occur exceed issue range.
 	if ok := this.summaryAssetIssueAmount(txn); !ok {
-		log.Info(fmt.Sprintf("Check summary Asset Issue Amount failed with txn=%x",txn.Hash()))
+		log.Info(fmt.Sprintf("Check summary Asset Issue Amount failed with txn=%x", txn.Hash()))
 		this.removeTransaction(txn)
 		return false
 	}
