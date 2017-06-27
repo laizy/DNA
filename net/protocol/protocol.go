@@ -90,7 +90,7 @@ type Noder interface {
 		port uint16, nonce uint64, relay uint8, height uint64)
 	ConnectSeeds()
 	Connect(nodeAddr string) error
-	Tx(buf []byte)
+	Tx(buf []byte, isprior bool)
 	GetTime() int64
 	NodeEstablished(uid uint64) bool
 	GetEvent(eventName string) *events.Event

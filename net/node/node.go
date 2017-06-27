@@ -50,6 +50,8 @@ type node struct {
 	lastContact              time.Time
 	nodeDisconnectSubscriber events.Subscriber
 	tryTimes                 uint32
+
+	pendings [2]chan []byte
 }
 
 func (node *node) DumpInfo() {

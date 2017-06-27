@@ -33,20 +33,26 @@ func BenchmarkWriteVarString(b *testing.B) {
 
 func BenchmarkReadVarUint(b *testing.B) {
 	data := []byte{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
-	r := bytes.NewReader(data)
-	ReadVarUint(r, 0)
+	for i := 0; i < b.N; i++ {
+		r := bytes.NewReader(data)
+		ReadVarUint(r, 0)
+	}
 }
 
 func BenchmarkReadVarBytes(b *testing.B) {
 	data := []byte{10, 11, 12}
-	r := bytes.NewReader(data)
-	ReadVarBytes(r)
+	for i := 0; i < b.N; i++ {
+		r := bytes.NewReader(data)
+		ReadVarBytes(r)
+	}
 }
 
 func BenchmarkReadVarString(b *testing.B) {
 	data := []byte{10, 11, 12}
-	r := bytes.NewReader(data)
-	ReadVarString(r)
+	for i := 0; i < b.N; i++ {
+		r := bytes.NewReader(data)
+		ReadVarString(r)
+	}
 }
 
 func TestSerialize(t *testing.T) {

@@ -90,7 +90,8 @@ func (node *node) HeartBeatMonitor() {
 
 func (node *node) ReqNeighborList() {
 	buf, _ := NewMsg("getaddr", node.local)
-	go node.Tx(buf)
+	node.Tx(buf, false)
+	// go node.Tx(buf, false)
 }
 
 func (node *node) ConnectSeeds() {
