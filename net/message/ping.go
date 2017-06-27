@@ -43,24 +43,25 @@ func NewPingMsg() ([]byte, error) {
 	return m, nil
 }
 
-func (msg ping) Verify(buf []byte) error {
+func (msg *ping) Verify(buf []byte) error {
 	err := msg.msgHdr.Verify(buf)
 	// TODO verify the message Content
 	return err
 }
 
-func (msg ping) Handle(node Noder) error {
+func (msg *ping) Handle(node Noder) error {
 	node.SetHeight(msg.height)
 	buf, err := NewPongMsg()
 	if err != nil {
 		log.Error("failed build a new ping message")
 	} else {
-		go node.Tx(buf)
+		node.Tx(buf, true)
+		// go node.Tx(buf)
 	}
 	return err
 }
 
-func (msg ping) Serialization() ([]byte, error) {
+func (msg *ping) Serialization() ([]byte, error) {
 	hdrBuf, err := msg.msgHdr.Serialization()
 	if err != nil {
 		return nil, err

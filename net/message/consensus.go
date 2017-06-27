@@ -124,7 +124,8 @@ func reqConsensusData(node Noder, hash common.Uint256) error {
 	msg.hash = hash
 
 	buf, _ := msg.Serialization()
-	go node.Tx(buf)
+	node.Tx(buf, true)
+	// go node.Tx(buf)
 
 	return nil
 }

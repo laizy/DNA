@@ -13,12 +13,12 @@ type nbrNodes struct {
 	List map[uint64]*node
 }
 
-func (nm *nbrNodes) Broadcast(buf []byte) {
+func (nm *nbrNodes) Broadcast(buf []byte, isprior bool) {
 	nm.RLock()
 	defer nm.RUnlock()
 	for _, node := range nm.List {
 		if node.state == ESTABLISH && node.relay == true {
-			node.Tx(buf)
+			node.Tx(buf, isprior)
 		}
 	}
 }

@@ -50,11 +50,12 @@ func reqTxnData(node Noder, hash common.Uint256) error {
 	//msg.hash = hash
 
 	buf, _ := msg.Serialization()
-	go node.Tx(buf)
+	node.Tx(buf, true)
+	// go node.Tx(buf)
 	return nil
 }
 
-func (msg dataReq) Serialization() ([]byte, error) {
+func (msg *dataReq) Serialization() ([]byte, error) {
 	hdrBuf, err := msg.msgHdr.Serialization()
 	if err != nil {
 		return nil, err
@@ -133,7 +134,7 @@ func NewTxn(txn *transaction.Transaction) ([]byte, error) {
 	return m, nil
 }
 
-func (msg trn) Serialization() ([]byte, error) {
+func (msg *trn) Serialization() ([]byte, error) {
 	hdrBuf, err := msg.msgHdr.Serialization()
 	if err != nil {
 		return nil, err
@@ -163,7 +164,8 @@ type txnPool struct {
 func ReqTxnPool(node Noder) error {
 	msg := AllocMsg("txnpool", 0)
 	buf, _ := msg.Serialization()
-	go node.Tx(buf)
+	node.Tx(buf, false)
+	// go node.Tx(buf)
 
 	return nil
 }

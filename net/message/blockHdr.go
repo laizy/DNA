@@ -147,7 +147,7 @@ blkHdrErr:
 	return err
 }
 
-func (msg headersReq) Handle(node Noder) error {
+func (msg *headersReq) Handle(node Noder) error {
 	log.Debug()
 	// lock
 	var startHash [HASHLEN]byte
@@ -163,7 +163,8 @@ func (msg headersReq) Handle(node Noder) error {
 	if err != nil {
 		return err
 	}
-	go node.Tx(buf)
+	node.Tx(buf, true)
+	// go node.Tx(buf)
 	return nil
 }
 
@@ -174,7 +175,8 @@ func SendMsgSyncHeaders(node Noder) {
 	} else {
 		node.LocalNode().SetSyncHeaders(true)
 		node.SetSyncHeaders(true)
-		go node.Tx(buf)
+		node.Tx(buf, true)
+		// go node.Tx(buf)
 	}
 }
 
@@ -189,7 +191,7 @@ func ReqBlkHdrFromOthers(node Noder) {
 	}
 }
 
-func (msg blkHeader) Handle(node Noder) error {
+func (msg *blkHeader) Handle(node Noder) error {
 	log.Debug()
 	node.StopRetryTimer()
 	err := ledger.DefaultLedger.Store.AddHeaders(msg.blkHdr, ledger.DefaultLedger)

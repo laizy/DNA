@@ -40,7 +40,7 @@ func (msg block) Handle(node Noder) error {
 	return nil
 }
 
-func (msg dataReq) Handle(node Noder) error {
+func (msg *dataReq) Handle(node Noder) error {
 	log.Debug()
 	reqtype := common.InventoryType(msg.dataType)
 	hash := msg.hash
@@ -51,7 +51,7 @@ func (msg dataReq) Handle(node Noder) error {
 			log.Error("Can't get block from hash: ", hash, " ,send not found message")
 			//call notfound message
 			b, err := NewNotFound(hash)
-			node.Tx(b)
+			node.Tx(b, true)
 			return err
 		}
 		log.Debug("block height is ", block.Blockdata.Height, " ,hash is ", hash)
@@ -59,7 +59,7 @@ func (msg dataReq) Handle(node Noder) error {
 		if err != nil {
 			return err
 		}
-		node.Tx(buf)
+		node.Tx(buf, true)
 
 	case common.TRANSACTION:
 		txn, err := NewTxnFromHash(hash)
@@ -70,7 +70,7 @@ func (msg dataReq) Handle(node Noder) error {
 		if err != nil {
 			return err
 		}
-		go node.Tx(buf)
+		node.Tx(buf, true)
 	}
 	return nil
 }
@@ -144,7 +144,7 @@ func ReqBlkData(node Noder, hash common.Uint256) error {
 		return err
 	}
 
-	node.Tx(sendBuf)
+	node.Tx(sendBuf, true)
 
 	return nil
 }

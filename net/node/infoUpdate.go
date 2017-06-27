@@ -67,7 +67,8 @@ func (node *node) SendPingToNbr() {
 				if err != nil {
 					log.Error("failed build a new ping message")
 				} else {
-					go n.Tx(buf)
+					n.Tx(buf, true)
+					// go n.Tx(buf)
 				}
 			}
 		}
@@ -90,7 +91,8 @@ func (node *node) HeartBeatMonitor() {
 
 func (node *node) ReqNeighborList() {
 	buf, _ := NewMsg("getaddr", node.local)
-	go node.Tx(buf)
+	node.Tx(buf, false)
+	// go node.Tx(buf, false)
 }
 
 func (node *node) ConnectSeeds() {
@@ -141,6 +143,7 @@ func (node *node) reconnect(peer *node) error {
 		conn.LocalAddr().String(), conn.RemoteAddr().String(),
 		conn.RemoteAddr().Network()))
 	go peer.rx()
+	peer.startupSendWorker()
 
 	peer.SetState(ESTABLISH)
 

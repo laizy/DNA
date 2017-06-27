@@ -66,7 +66,7 @@ func (msg blocksReq) Verify(buf []byte) error {
 	return err
 }
 
-func (msg blocksReq) Handle(node Noder) error {
+func (msg *blocksReq) Handle(node Noder) error {
 	log.Debug()
 	log.Debug("handle blocks request")
 	var starthash Uint256
@@ -82,11 +82,12 @@ func (msg blocksReq) Handle(node Noder) error {
 	if err != nil {
 		return err
 	}
-	go node.Tx(buf)
+	node.Tx(buf, true)
+	// go node.Tx(buf)
 	return nil
 }
 
-func (msg blocksReq) Serialization() ([]byte, error) {
+func (msg *blocksReq) Serialization() ([]byte, error) {
 	var buf bytes.Buffer
 
 	err := binary.Write(&buf, binary.LittleEndian, msg)

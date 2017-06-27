@@ -184,7 +184,7 @@ func (msg version) Handle(node Noder) error {
 		node.SetState(HANDSHAKED)
 		buf, _ = NewVerack()
 	}
-	node.Tx(buf)
+	node.Tx(buf, false)
 
 	return nil
 }

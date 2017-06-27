@@ -13,6 +13,7 @@ import (
 	"DNA/net/httpjsonrpc"
 	"DNA/net/httprestful"
 	"DNA/net/protocol"
+	_ "net/http/pprof"
 	"os"
 	"runtime"
 	"time"

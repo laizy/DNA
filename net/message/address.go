@@ -81,13 +81,13 @@ func NewAddrs(nodeaddrs []NodeAddr, count uint64) ([]byte, error) {
 	return m, nil
 }
 
-func (msg addrReq) Verify(buf []byte) error {
+func (msg *addrReq) Verify(buf []byte) error {
 	// TODO Verify the message Content
 	err := msg.Hdr.Verify(buf)
 	return err
 }
 
-func (msg addrReq) Handle(node Noder) error {
+func (msg *addrReq) Handle(node Noder) error {
 	log.Debug()
 	// lock
 	var addrstr []NodeAddr
@@ -97,7 +97,8 @@ func (msg addrReq) Handle(node Noder) error {
 	if err != nil {
 		return err
 	}
-	go node.Tx(buf)
+	node.Tx(buf, false)
+	// go node.Tx(buf)
 	return nil
 }
 

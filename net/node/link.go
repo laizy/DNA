@@ -8,7 +8,6 @@ import (
 	. "DNA/net/protocol"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -139,6 +138,7 @@ func (n *node) initConnection() {
 		node.local = n
 		node.conn = conn
 		go node.rx()
+		node.startupSendWorker()
 	}
 	//TODO Release the net listen resouce
 }
@@ -230,10 +230,11 @@ func (node *node) Connect(nodeAddr string) error {
 		conn.LocalAddr().String(), conn.RemoteAddr().String(),
 		conn.RemoteAddr().Network()))
 	go n.rx()
+	n.startupSendWorker()
 
 	n.SetState(HAND)
 	buf, _ := NewVersion(node)
-	n.Tx(buf)
+	n.Tx(buf, false)
 
 	return nil
 }
@@ -277,13 +278,67 @@ func TLSDial(nodeAddr string) (net.Conn, error) {
 	return conn, nil
 }
 
-func (node *node) Tx(buf []byte) {
-	log.Debug()
-	str := hex.EncodeToString(buf)
-	log.Debug(fmt.Sprintf("TX buf length: %d\n%s", len(buf), str))
+func (this *node) startupSendWorker() {
+	this.pendings[0] = make(chan []byte, 2000)
+	this.pendings[1] = make(chan []byte, 2000)
 
-	_, err := node.conn.Write(buf)
-	if err != nil {
-		log.Error("Error sending messge to peer node ", err.Error())
+	go func() {
+		for {
+			var stats [2]int
+			// block wait for any buf
+			var buf []byte
+			select {
+			case buf = <-this.pendings[0]:
+				stats[0]++
+			case buf = <-this.pendings[1]:
+				stats[1]++
+			}
+
+			_, err := this.conn.Write(buf)
+			if err != nil {
+				log.Error("Error sending messge to peer node ", err.Error())
+			}
+
+			// handle the rest tasks with priority
+
+			for prior := 0; prior <= 1; {
+				select {
+				case buf := <-this.pendings[prior]:
+					stats[prior]++
+					_, err := this.conn.Write(buf)
+					if err != nil {
+						log.Error("Error sending messge to peer node ", err.Error())
+					}
+					if stats[prior] > 200 {
+						prior += 1
+					}
+				default:
+					prior += 1
+				}
+			}
+
+			if stats[0] > 5 {
+				log.Error("send stats: high=", stats[0], ", low=", stats[1])
+			}
+		}
+
+	}()
+
+}
+
+func (node *node) Tx(buf []byte, isprior bool) {
+	log.Debug()
+	// str := hex.EncodeToString(buf)
+	// log.Debug(fmt.Sprintf("TX buf length: %d\n%s", len(buf), str))
+
+	// _, err := node.conn.Write(buf)
+	// if err != nil {
+	// 	log.Error("Error sending messge to peer node ", err.Error())
+	// }
+	if isprior {
+		node.pendings[0] <- buf
+		return
 	}
+
+	node.pendings[1] <- buf
 }

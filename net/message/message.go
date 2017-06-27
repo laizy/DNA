@@ -196,8 +196,8 @@ func HandleNodeMsg(node Noder, buf []byte, len int) error {
 		return errors.New("Unexpected size of received message")
 	}
 
-	str := hex.EncodeToString(buf[:len])
-	log.Debug("Received data len: ", len, "\n", str)
+	// str := hex.EncodeToString(buf[:len])
+	// log.Debug("Received data len: ", len, "\n", str)
 
 	s, err := MsgType(buf)
 	if err != nil {

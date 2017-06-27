@@ -50,6 +50,8 @@ type node struct {
 	lastContact              time.Time
 	nodeDisconnectSubscriber events.Subscriber
 	tryTimes                 uint32
+
+	pendings [2]chan []byte
 }
 
 func (node *node) DumpInfo() {
@@ -215,6 +217,7 @@ func (node *node) Xmit(message interface{}) error {
 	log.Debug()
 	var buffer []byte
 	var err error
+	var isprior = false
 	switch message.(type) {
 	case *transaction.Transaction:
 		log.Debug("TX transaction message")
@@ -226,6 +229,7 @@ func (node *node) Xmit(message interface{}) error {
 		}
 		node.txnCnt++
 	case *ledger.Block:
+		isprior = true
 		log.Debug("TX block message")
 		block := message.(*ledger.Block)
 		buffer, err = NewBlock(block)
@@ -234,6 +238,7 @@ func (node *node) Xmit(message interface{}) error {
 			return err
 		}
 	case *ConsensusPayload:
+		isprior = true
 		log.Debug("TX consensus message")
 		consensusPayload := message.(*ConsensusPayload)
 		buffer, err = NewConsensus(consensusPayload)
@@ -242,6 +247,7 @@ func (node *node) Xmit(message interface{}) error {
 			return err
 		}
 	case Uint256:
+		isprior = true
 		log.Debug("TX block hash message")
 		hash := message.(Uint256)
 		buf := bytes.NewBuffer([]byte{})
@@ -258,7 +264,7 @@ func (node *node) Xmit(message interface{}) error {
 		return errors.New("Unknown Xmit message type")
 	}
 
-	node.nbrNodes.Broadcast(buffer)
+	node.nbrNodes.Broadcast(buffer, isprior)
 
 	return nil
 }

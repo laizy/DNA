@@ -48,7 +48,7 @@ func NewVerack() ([]byte, error) {
  *
  */
 // TODO The process should be adjusted based on above table
-func (msg verACK) Handle(node Noder) error {
+func (msg *verACK) Handle(node Noder) error {
 	log.Debug()
 
 	s := node.GetState()
@@ -61,7 +61,8 @@ func (msg verACK) Handle(node Noder) error {
 
 	if s == HANDSHAKE {
 		buf, _ := NewVerack()
-		node.Tx(buf)
+		node.Tx(buf, false)
+		// node.Tx(buf)
 	}
 
 	node.DumpInfo()
