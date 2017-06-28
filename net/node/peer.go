@@ -58,10 +58,10 @@ func NewPeer(conn net.Conn) *Peer {
 }
 
 func (self *Peer) start() {
-	peer.UpdateRXTime(time.Now())
+	self.UpdateRXTime(time.Now())
 
-	peer.startupRecvWorker()
-	peer.startupSendWorker()
+	self.startupRecvWorker()
+	self.startupSendWorker()
 }
 
 func (self *Peer) Close() {

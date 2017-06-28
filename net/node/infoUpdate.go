@@ -142,6 +142,9 @@ func (node *node) reconnect(peer *node) error {
 	log.Info(fmt.Sprintf("Reconnect node %s connect with %s with %s",
 		conn.LocalAddr().String(), conn.RemoteAddr().String(),
 		conn.RemoteAddr().Network()))
+
+	close(peer.quit)
+	peer.quit = make(chan interface{})
 	go peer.rx()
 	peer.startupSendWorker()
 

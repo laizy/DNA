@@ -71,6 +71,12 @@ func (node *node) rx() {
 	conn := node.getConn()
 	buf := make([]byte, MAXBUFLEN)
 	for {
+		select {
+		case <-node.quit:
+			return
+		default:
+		}
+
 		len, err := conn.Read(buf[0:(MAXBUFLEN - 1)])
 		buf[MAXBUFLEN-1] = 0 //Prevent overflow
 		switch err {
@@ -137,6 +143,7 @@ func (n *node) initConnection() {
 		node.addr, err = parseIPaddr(conn.RemoteAddr().String())
 		node.local = n
 		node.conn = conn
+		node.quit = make(chan interface{})
 		go node.rx()
 		node.startupSendWorker()
 	}
@@ -229,6 +236,8 @@ func (node *node) Connect(nodeAddr string) error {
 	log.Info(fmt.Sprintf("Connect node %s connect with %s with %s",
 		conn.LocalAddr().String(), conn.RemoteAddr().String(),
 		conn.RemoteAddr().Network()))
+
+	n.quit = make(chan interface{})
 	go n.rx()
 	n.startupSendWorker()
 
@@ -282,8 +291,15 @@ func (this *node) startupSendWorker() {
 	this.pendings[0] = make(chan []byte, 2000)
 	this.pendings[1] = make(chan []byte, 2000)
 
+	conn := this.conn // used to avoid concurent access in the following goroutine
 	go func() {
 		for {
+			select {
+			case <-this.quit:
+				return
+			default:
+			}
+
 			var stats [2]int
 			// block wait for any buf
 			var buf []byte
@@ -294,7 +310,7 @@ func (this *node) startupSendWorker() {
 				stats[1]++
 			}
 
-			_, err := this.conn.Write(buf)
+			_, err := conn.Write(buf)
 			if err != nil {
 				log.Error("Error sending messge to peer node ", err.Error())
 			}

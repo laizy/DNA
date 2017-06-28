@@ -52,6 +52,7 @@ type node struct {
 	tryTimes                 uint32
 
 	pendings [2]chan []byte
+	quit     chan interface{} // used to release rx backend goroutine
 }
 
 func (node *node) DumpInfo() {
