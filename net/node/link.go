@@ -51,7 +51,8 @@ func unpackNodeBuf(node *node, buf []byte) {
 
 	if len(buf) == msgLen {
 		msgBuf = append(node.rxBuf.p, buf[:]...)
-		go HandleNodeMsg(node, msgBuf, len(msgBuf))
+		HandleNodeMsg(node, msgBuf, len(msgBuf))
+		// go HandleNodeMsg(node, msgBuf, len(msgBuf))
 		node.rxBuf.p = nil
 		node.rxBuf.len = 0
 	} else if len(buf) < msgLen {
@@ -59,7 +60,8 @@ func unpackNodeBuf(node *node, buf []byte) {
 		node.rxBuf.len = msgLen - len(buf)
 	} else {
 		msgBuf = append(node.rxBuf.p, buf[0:msgLen]...)
-		go HandleNodeMsg(node, msgBuf, len(msgBuf))
+		HandleNodeMsg(node, msgBuf, len(msgBuf))
+		// go HandleNodeMsg(node, msgBuf, len(msgBuf))
 		node.rxBuf.p = nil
 		node.rxBuf.len = 0
 

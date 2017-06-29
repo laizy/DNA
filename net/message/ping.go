@@ -56,6 +56,7 @@ func (msg *ping) Handle(node Noder) error {
 		log.Error("failed build a new ping message")
 	} else {
 		node.Tx(buf, true)
+		log.Trace("send ping message")
 		// go node.Tx(buf)
 	}
 	return err

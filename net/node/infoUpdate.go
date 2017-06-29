@@ -82,7 +82,7 @@ func (node *node) HeartBeatMonitor() {
 			t := n.GetLastRXTime()
 			if time.Since(t).Seconds() > (PERIODUPDATETIME * KEEPALIVETIMEOUT) {
 				log.Warn("keepalive timeout!!!")
-				n.SetState(INACTIVITY)
+				// n.SetState(INACTIVITY)
 				//n.CloseConn()
 			}
 		}

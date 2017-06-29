@@ -51,6 +51,7 @@ func (msg pong) Verify(buf []byte) error {
 
 func (msg pong) Handle(node Noder) error {
 	node.SetHeight(msg.height)
+	log.Trace("recv ping message")
 	return nil
 }
 

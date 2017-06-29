@@ -189,6 +189,63 @@ func NewMsg(t string, n Noder) ([]byte, error) {
 	}
 }
 
+type msgTask struct {
+	msg  Messager
+	node Noder
+}
+
+var msgChan = func() [2]chan msgTask {
+	var c [2]chan msgTask
+	c[0] = make(chan msgTask, 2000)
+	c[1] = make(chan msgTask, 2000)
+	return c
+}()
+
+func msgLoop() {
+	go func() {
+		for {
+			var stats [2]int
+			// block wait for any buf
+			var task msgTask
+			select {
+			case task = <-msgChan[0]:
+				stats[0]++
+			case task = <-msgChan[1]:
+				stats[1]++
+			}
+
+			go task.msg.Handle(task.node)
+
+			// handle the rest tasks with priority
+
+			for prior := 0; prior <= 1; {
+				select {
+				case task := <-msgChan[prior]:
+					stats[prior]++
+					go task.msg.Handle(task.node)
+
+					if stats[prior] > 200 {
+						prior += 1
+					}
+				default:
+					prior += 1
+				}
+			}
+
+			if stats[0] > 0 && stats[0]+stats[1] > 10 {
+				log.Trace("get msg stats: high=", stats[0], ", low=", stats[1])
+			}
+		}
+
+	}()
+}
+
+func init() {
+
+	msgLoop()
+
+}
+
 // FIXME the length exceed int32 case?
 func HandleNodeMsg(node Noder, buf []byte, len int) error {
 	if len < MSGHDRLEN {
@@ -213,9 +270,18 @@ func HandleNodeMsg(node Noder, buf []byte, len int) error {
 	// Todo attach a node pointer to each message
 	// Todo drop the message when verify/deseria packet error
 	msg.Deserialization(buf[:len])
-	msg.Verify(buf[MSGHDRLEN:len])
+	if err = msg.Verify(buf[MSGHDRLEN:len]); err != nil {
+		return err
+	}
 
-	return msg.Handle(node)
+	var prior = 0
+	if s == "tx" {
+		prior = 1
+	}
+
+	msgChan[prior] <- msgTask{msg: msg, node: node}
+
+	return nil
 }
 
 func magicVerify(magic uint32) bool {
