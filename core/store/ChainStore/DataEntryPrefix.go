@@ -27,8 +27,8 @@ const (
 	ST_ENDORSE  DataEntryPrefix = 0xd2
 
 	//SYSTEM
-	SYS_CurrentBlock      DataEntryPrefix = 0x40
-	SYS_CurrentHeader     DataEntryPrefix = 0x41
+	SYS_CurrentBlock DataEntryPrefix = 0x40
+	// SYS_CurrentHeader     DataEntryPrefix = 0x41
 	SYS_CurrentBookKeeper DataEntryPrefix = 0x42
 
 	//CONFIG
