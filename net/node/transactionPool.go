@@ -75,14 +75,30 @@ func (this *TXNPool) GetTxnPool(byCount bool) map[common.Uint256]*transaction.Tr
 	}
 	var num int
 	txnMap := make(map[common.Uint256]*transaction.Transaction, count)
+	interval, _ := ledger.DefaultLedger.Store.GetTxValidInterval()
+	expired := make([]*transaction.Transaction, 0)
+	height := ledger.DefaultLedger.Blockchain.Height
 	for txnId, tx := range this.txnList {
+		if tx.GetTransactionVersion() >= 1 {
+			if errCode := va.VerifyTransactionExpiration(tx, interval, height); errCode != ErrNoError {
+				if errCode == ErrExpired {
+					expired = append(expired, tx)
+				}
+				continue
+			}
+		}
 		txnMap[txnId] = tx
 		num++
 		if num >= count {
 			break
 		}
 	}
+
 	this.RUnlock()
+	if len(expired) > 0 {
+		log.Info("Got expired transactions:", len(expired))
+		ds.localNet.CleanSubmittedTransactions(expired)
+	}
 	return txnMap
 }
 

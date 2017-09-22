@@ -558,22 +558,8 @@ func (ds *DbftService) Timeout() {
 			ds.context.Transactions = append(ds.context.Transactions, txBookkeeping)
 			//add transactions from transaction pool
 
-			interval, _ := ledger.DefaultLedger.Store.GetTxValidInterval()
-			expired := make([]*tx.Transaction, 0)
 			for _, tx := range transactionsPool {
-				if tx.GetTransactionVersion() >= 1 {
-					if errCode := va.VerifyTransactionExpiration(tx, interval, ds.context.Height); errCode != ErrNoError {
-						if errCode == ErrExpired {
-							expired = append(expired, tx)
-						}
-						continue
-					}
-				}
 				ds.context.Transactions = append(ds.context.Transactions, tx)
-			}
-			if len(expired) > 0 {
-				log.Info("Got expired transactions:", len(expired))
-				ds.localNet.CleanSubmittedTransactions(expired)
 			}
 
 			ds.context.header = nil
