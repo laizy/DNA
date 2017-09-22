@@ -41,7 +41,7 @@ func (this *TXNPool) AppendTxnPool(txn *transaction.Transaction) ErrCode {
 			return ErrInternal
 		}
 		if errCode := va.VerifyTransactionExpiration(txn, validInterval, blockHeight+1); errCode != ErrNoError {
-			log.Info("Transaction verification failed", txn.Hash())
+			log.Warn("Transaction verification failed", txn.Hash())
 			return errCode
 		}
 	}
@@ -87,10 +87,10 @@ func (this *TXNPool) GetTxnPool(byCount bool) map[common.Uint256]*transaction.Tr
 }
 
 //clean the trasaction Pool with committed block.
-func (this *TXNPool) CleanSubmittedTransactions(block *ledger.Block) error {
-	this.cleanTransactionList(block.Transactions)
-	this.cleanUTXOList(block.Transactions)
-	this.cleanIssueSummary(block.Transactions)
+func (this *TXNPool) CleanSubmittedTransactions(txs []*transaction.Transaction) error {
+	this.cleanTransactionList(txs)
+	this.cleanUTXOList(txs)
+	this.cleanIssueSummary(txs)
 	return nil
 }
 
