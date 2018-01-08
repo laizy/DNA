@@ -71,7 +71,10 @@ func (self *LevelDBStore) BatchDelete(key []byte) error {
 }
 
 func (self *LevelDBStore) BatchCommit() error {
-	err := self.db.Write(self.batch, nil)
+	o := opt.WriteOptions{
+		Sync: true,
+	}
+	err := self.db.Write(self.batch, &o)
 	if err != nil {
 		return err
 	}
