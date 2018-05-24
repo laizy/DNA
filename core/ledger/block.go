@@ -131,8 +131,8 @@ func (b *Block) GetPrograms() []*program.Program {
 
 func (b *Block) Hash() Uint256 {
 	if b.hash == nil {
-		b.hash = new(Uint256)
-		*b.hash = b.Blockdata.Hash()
+		hash = b.Blockdata.Hash()
+		b.hash = &hash
 	}
 	return *b.hash
 }
