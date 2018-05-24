@@ -272,7 +272,8 @@ func GetHeadersFromHash(startHash common.Uint256, stopHash common.Uint256) ([]le
 		hash, err := ledger.DefaultLedger.Store.GetBlockHash(stopHeight + i)
 		hd, err := ledger.DefaultLedger.Store.GetHeader(hash)
 		if err != nil {
-			log.Error("GetBlockWithHeight failed ", err.Error())
+			log.Errorf("GetBlockWithHeight failed: height: %d, hash: %x, %v, curHeight: %d, stopHeight:%d, count:%d",
+				stopHeight+i, hash, err.Error(),curHeight, stopHeight, count)
 			return nil, 0, err
 		}
 		headers = append(headers, *hd)
