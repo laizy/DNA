@@ -1,19 +1,18 @@
-hash: 2f1075f47c8df863bcabfbec42ce9f000dca85561e74147bb4144790d3728e43
-updated: 2017-09-13T17:44:02.2041524+08:00
+hash: 79f442312e5a8ae8b27b5e3808fc9f41581bb8b4c04469bf4ac6a200e71ddfe7
+updated: 2018-12-04T12:05:48.5337707+08:00
 imports:
 - name: github.com/bitly/go-simplejson
-  version: da1a8928f709389522c8023062a3739f3b4af419
+  version: aabad6e819789e569bd6aabf444c935aa9ba1e44
 - name: github.com/dnaproject/gopass
   version: 3d5cac4c3c49028515a6f149131ef897100b71c2
 - name: github.com/golang/crypto
-  version: 459e26527287adbc2adcc5d0d49abff9a5f315a7
+  version: 505ab145d0a99da450461ae2c1a9f6cd10d1f447
   subpackages:
-  - ripemd160
   - ssh/terminal
 - name: github.com/golang/snappy
-  version: 553a641470496b2327abcac10b36396bd98e45c9
+  version: 2e65f85255dbc3072edf28d6b5b8efc472979f5a
 - name: github.com/gorilla/websocket
-  version: a69d9f6de432e2c6b296a947d8a5ee88f68522cf
+  version: ea4d1f681babbce9545c9c5f3d5194a789c89f5b
 - name: github.com/itchyny/base58-go
   version: 4b24a7dfa1bfba3724ffb3598b1c6ded1cff087f
 - name: github.com/pborman/uuid
@@ -21,7 +20,7 @@ imports:
 - name: github.com/phayes/cryptoid
   version: 981f0b34ea99d930005432caccc63d7878e06ff4
 - name: github.com/syndtr/goleveldb
-  version: 3c5717caf1475fd25964109a0fc640bd150fce43
+  version: 5d6fca44a948d2be89a9702de7717f0168403d3d
   subpackages:
   - leveldb
   - leveldb/cache
@@ -36,7 +35,19 @@ imports:
   - leveldb/table
   - leveldb/util
 - name: github.com/urfave/cli
-  version: f6e8084112db1c3aa9c1e4144f024ab549ea08c1
+  version: cfb38830724cc34fedffe9a2a29fb54fa9169cd1
 - name: github.com/whyrusleeping/tar-utils
-  version: e8a5890cfc9d59a203361237581468780d945b6e
+  version: 8c6c8ba81d5c71fd69c0f48dbde4b2fb422b6dfc
+- name: golang.org/x/crypto
+  version: 5ba7f63082460102a45837dbd1827e10f9479ac0
+  repo: https://github.com/golang/crypto.git
+  subpackages:
+  - ripemd160
+  - ssh/terminal
+- name: golang.org/x/sys
+  version: c11f84a56e43e20a78cee75a7c034031ecf57d1f
+  repo: https://github.com/golang/sys.git
+  subpackages:
+  - unix
+  - windows
 testImports: []

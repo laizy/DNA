@@ -1,15 +1,13 @@
 package: DNA
 import:
-- package: github.com/golang/crypto
+- package: golang.org/x/sys
+  repo: https://github.com/golang/sys.git
+- package: golang.org/x/crypto
+  repo: https://github.com/golang/crypto.git
   subpackages:
   - ripemd160
   - ssh/terminal
 - package: github.com/syndtr/goleveldb
-  subpackages:
-  - leveldb
-  - leveldb/errors
-  - leveldb/iterator
-  - leveldb/opt
 - package: github.com/itchyny/base58-go
 - package: github.com/urfave/cli
 - package: github.com/bitly/go-simplejson
@@ -17,7 +15,3 @@ import:
 - package: github.com/dnaproject/gopass
 - package: github.com/gorilla/websocket
 - package: github.com/pborman/uuid
-ignore:
-  - golang.org/x/sys/unix
-
-

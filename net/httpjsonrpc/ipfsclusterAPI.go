@@ -99,7 +99,8 @@ func GetFileIPFS(ref, outPath string) error {
 	}
 	rr := interface{}(&httpResponseReader{resp})
 	outReader := rr.(io.Reader)
-	extractor := &tar.Extractor{outPath}
+	extractor := &tar.Extractor{}
+	extractor.Path = outPath
 	return extractor.Extract(outReader)
 }
 
