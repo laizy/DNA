@@ -11,5 +11,6 @@ install:
 
 script:
   - make
+  - bash ./.travis.gofmt.sh
     #  - go test -v ./...
 
