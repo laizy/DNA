@@ -1,9 +1,15 @@
 language: go
 
+go:
+  - 1.10.x
+
+go_import_path: DNA
+
 install:
-  - grep 'import' -rl ./| grep ".go"| xargs sed -i 's#"DNA/#"github.com/DNAProject/DNA/#g'
   - go get github.com/Masterminds/glide
   - glide install
 
-go:
-  - 1.8.x
+script:
+  - make
+    #  - go test -v ./...
+
